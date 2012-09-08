@@ -1,5 +1,5 @@
 /*!
- * palapala.js v1.0.0
+ * palapala.js v1.0.1
  * http://www.palapala.jp/
  *
  * Copyright 2012, Splead Inc.
