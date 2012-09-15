@@ -1,5 +1,5 @@
 /*!
- * palapala.js v1.0.1
+ * palapala.js v1.1.1
  * http://www.palapala.jp/
  *
  * Copyright 2012, Splead Inc.
@@ -7,62 +7,76 @@
  * Dual licensed under the MIT or GPL Version 2 licenses.
  */
 
-var palapala = function( sprites, start ) {
+var palapala = function( sprites, options ) {
 	
-	if ( typeof start === 'undefined' ) start = true;
+	options = options || {};
 	
 	var step = 0;
-	
 	var endFrame = 0;
-	for ( var sprite in sprites ) {
-		for ( var key in sprites[ sprite ] ) {
-			if ( endFrame < parseInt( key ) ) {
-				endFrame = parseInt( key );
+	for ( var sid in sprites ) {
+		
+		if ( sprites[ sid ] instanceof Array ) {
+			var tmp = {};
+			var time = 0;
+			for ( var i in sprites[ sid ] ) {
+				tmp[ time ] = sprites[ sid ][ i ];
+				time = time + sprites[ sid ][ i ].time;
+			}
+			sprites[ sid ] = tmp;
+		}
+		
+		for ( var time in sprites[ sid ] ) {
+			if ( endFrame < parseInt( time ) ) {
+				endFrame = parseInt( time );
 			}
 		}
 	}
-	endFrame = endFrame + 1;
 	
 	var animation = function() {
 		
 		if ( step > endFrame ) {
-			return;
+			if ( options.repeat === false ) {
+				return;
+			} else {
+				step = 0;
+			}
 		} else {
 			
-			for ( var sprite in sprites ) {
+			for ( var sid in sprites ) {
 				
-				if ( sprites[ sprite ][ step ] ) {
+				if ( sprites[ sid ][ step ] ) {
 					
-					var node = document.getElementById( sprite );
-					for ( var i=0; i<node.childNodes.length; i++ ) {
+					var node = document.getElementById( sid );
+					for ( var i = 0; i < node.childNodes.length; i++ ) {
 						if ( node.childNodes[ i ].style ) {
 							node.childNodes[ i ].style.display = "none";
 						}
 					}
 					
-					id = sprites[ sprite ][ step ].id;
+					id = sprites[ sid ][ step ].id;
 					document.getElementById( id ).style.display = "block";
 					
-					if ( _left = sprites[ sprite ][ step ][ 'left' ] ) {
-						document.getElementById( sprite ).style.left = _left + "px";
+					if ( _left = sprites[ sid ][ step ][ 'left' ] ) {
+						document.getElementById( sid ).style.left = _left + "px";
 					}
-					if ( _top = sprites[ sprite ][ step ][ 'top' ] ) {
-						document.getElementById( sprite ).style.top = _top + "px";
+					if ( _top = sprites[ sid ][ step ][ 'top' ] ) {
+						document.getElementById( sid ).style.top = _top + "px";
 					}
-					if ( _opacity = sprites[ sprite ][ step ].opacity ) {
-						document.getElementById( sprite ).style.filter = "alpha(opacity=" + ( _opacity * 100 ) + ")";
-						document.getElementById( sprite ).style.MozOpacity  = _opacity;
-						document.getElementById( sprite ).style.opacity = _opacity;
+					if ( _opacity = sprites[ sid ][ step ].opacity ) {
+						document.getElementById( sid ).style.filter = "alpha(opacity=" + ( _opacity * 100 ) + ")";
+						document.getElementById( sid ).style.MozOpacity  = _opacity;
+						document.getElementById( sid ).style.opacity = _opacity;
 					}
 				}
 			}
+			
+			step = step + 1;
 		}
 		
-		step = step + 1;
 		setTimeout( animation, 40 );
 	}
 	
-	if ( start ) {
+	if ( options.start !== false ) {
 		animation();
 	}
 	
