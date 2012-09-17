@@ -1,5 +1,5 @@
 /*!
- * palapala.js v1.1.1
+ * palapala.js v1.2.0
  * http://www.palapala.jp/
  *
  * Copyright 2012, Splead Inc.
@@ -36,6 +36,9 @@ var palapala = function( sprites, options ) {
 		
 		if ( step > endFrame ) {
 			if ( options.repeat === false ) {
+				if ( options.callback ) {
+					callback.call( this, sprites );
+				}
 				return;
 			} else {
 				step = 0;
