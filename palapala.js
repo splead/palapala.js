@@ -1,5 +1,5 @@
 /*!
- * palapala.js v1.2.1
+ * palapala.js v1.2.2
  * http://www.palapala.jp/
  *
  * Copyright 2012, Splead Inc.
@@ -10,9 +10,9 @@
 function palapala ( sprites, options ) {
 	
 	options = options || {};
-	
 	var step = 0;
 	var endFrame = 0;
+	
 	for ( var sid in sprites ) {
 		
 		if ( sprites[ sid ] instanceof Array ) {
@@ -23,6 +23,9 @@ function palapala ( sprites, options ) {
 				time = time + sprites[ sid ][ i ].time;
 			}
 			sprites[ sid ] = tmp;
+			if( endFrame < time ){
+				endFrame = time;
+			}
 		}
 		
 		for ( var time in sprites[ sid ] ) {
@@ -34,7 +37,7 @@ function palapala ( sprites, options ) {
 	
 	var animation = function() {
 		
-		if ( step > endFrame ) {
+		if ( step >= endFrame ) {
 			if ( options.repeat === false ) {
 				if ( options.callback ) {
 					options.callback.call( this, sprites );
