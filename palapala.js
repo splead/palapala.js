@@ -1,5 +1,5 @@
 /*!
- * palapala.js v1.2.2
+ * palapala.js v1.3.0
  * http://www.palapala.jp/
  *
  * Copyright 2012, Splead Inc.
@@ -10,34 +10,34 @@
 function palapala ( sprites, options ) {
 	
 	options = options || {};
-	var step = 0;
-	var endFrame = 0;
+	var step     = 0;
+	var lastStep = 0;
 	
 	for ( var sid in sprites ) {
 		
 		if ( sprites[ sid ] instanceof Array ) {
 			var tmp = {};
-			var time = 0;
+			var _step = 0;
 			for ( var i in sprites[ sid ] ) {
-				tmp[ time ] = sprites[ sid ][ i ];
-				time = time + sprites[ sid ][ i ].time;
+				tmp[ _step ] = sprites[ sid ][ i ];
+				_step = _step + sprites[ sid ][ i ].interval;
 			}
 			sprites[ sid ] = tmp;
-			if( endFrame < time ){
-				endFrame = time;
+			if( lastStep < _step ){
+				lastStep = _step;
 			}
 		}
 		
-		for ( var time in sprites[ sid ] ) {
-			if ( endFrame < parseInt( time ) ) {
-				endFrame = parseInt( time );
+		for ( var _step in sprites[ sid ] ) {
+			if ( lastStep < parseInt( _step ) ) {
+				lastStep = parseInt( _step );
 			}
 		}
 	}
 	
 	var animation = function() {
 		
-		if ( step >= endFrame ) {
+		if ( step >= lastStep ) {
 			if ( options.repeat === false ) {
 				if ( options.callback ) {
 					options.callback.call( this, sprites );
