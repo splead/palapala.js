@@ -1,5 +1,5 @@
 /*!
- * palapala.js v1.3.0
+ * palapala.js v1.3.1
  * http://www.palapala.jp/
  *
  * Copyright 2012, Splead Inc.
@@ -62,13 +62,13 @@ function palapala ( sprites, options ) {
 					id = sprites[ sid ][ step ].id;
 					document.getElementById( id ).style.display = "block";
 					
-					if ( _left = sprites[ sid ][ step ][ 'left' ] ) {
-						document.getElementById( sid ).style.left = _left + "px";
+					if ( sprites[ sid ][ step ][ 'left' ] !== 'undefined' ) {
+						document.getElementById( sid ).style.left = sprites[ sid ][ step ][ 'left' ] + "px";
 					}
-					if ( _top = sprites[ sid ][ step ][ 'top' ] ) {
-						document.getElementById( sid ).style.top = _top + "px";
+					if ( sprites[ sid ][ step ][ 'top' ] !== 'undefined' ) {
+						document.getElementById( sid ).style.top = sprites[ sid ][ step ][ 'top' ] + "px";
 					}
-					if ( _opacity = sprites[ sid ][ step ].opacity ) {
+					if ( _opacity = sprites[ sid ][ step ].opacity !== 'undefined' ) {
 						document.getElementById( sid ).style.filter = "alpha(opacity=" + ( _opacity * 100 ) + ")";
 						document.getElementById( sid ).style.MozOpacity  = _opacity;
 						document.getElementById( sid ).style.opacity = _opacity;
