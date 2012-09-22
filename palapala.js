@@ -1,5 +1,5 @@
 /*!
- * palapala.js v1.3.1
+ * palapala.js v1.3.2
  * http://www.palapala.jp/
  *
  * Copyright 2012, Splead Inc.
@@ -37,7 +37,39 @@ function palapala ( sprites, options ) {
 	
 	var animation = function() {
 		
+		for ( var sid in sprites ) {
+			
+			if ( sprites[ sid ][ step ] ) {
+				
+				var node = document.getElementById( sid );
+				for ( var i = 0; i < node.childNodes.length; i++ ) {
+					if ( node.childNodes[ i ].style ) {
+						node.childNodes[ i ].style.display = "none";
+					}
+				}
+				
+				id = sprites[ sid ][ step ].id;
+				document.getElementById( id ).style.display = "block";
+				
+				if ( typeof sprites[ sid ][ step ][ 'left' ] !== 'undefined' ) {
+					var _left = sprites[ sid ][ step ][ 'left' ];
+					document.getElementById( sid ).style.left = _left + "px";
+				}
+				if ( typeof sprites[ sid ][ step ][ 'top' ] !== 'undefined' ) {
+					var _top = sprites[ sid ][ step ][ 'top' ];
+					document.getElementById( sid ).style.top = _top + "px";
+				}
+				if ( typeof sprites[ sid ][ step ].opacity !== 'undefined' ) {
+					var _opacity = sprites[ sid ][ step ].opacity
+					document.getElementById( sid ).style.filter = "alpha(opacity=" + ( _opacity * 100 ) + ")";
+					document.getElementById( sid ).style.MozOpacity  = _opacity;
+					document.getElementById( sid ).style.opacity = _opacity;
+				}
+			}
+		}
+		
 		if ( step >= lastStep ) {
+			
 			if ( options.repeat === false ) {
 				if ( options.callback ) {
 					options.callback.call( this, sprites );
@@ -45,41 +77,14 @@ function palapala ( sprites, options ) {
 				return;
 			} else {
 				step = 0;
+				setTimeout( animation, 40 );
 			}
+			
 		} else {
 			
-			for ( var sid in sprites ) {
-				
-				if ( sprites[ sid ][ step ] ) {
-					
-					var node = document.getElementById( sid );
-					for ( var i = 0; i < node.childNodes.length; i++ ) {
-						if ( node.childNodes[ i ].style ) {
-							node.childNodes[ i ].style.display = "none";
-						}
-					}
-					
-					id = sprites[ sid ][ step ].id;
-					document.getElementById( id ).style.display = "block";
-					
-					if ( sprites[ sid ][ step ][ 'left' ] !== 'undefined' ) {
-						document.getElementById( sid ).style.left = sprites[ sid ][ step ][ 'left' ] + "px";
-					}
-					if ( sprites[ sid ][ step ][ 'top' ] !== 'undefined' ) {
-						document.getElementById( sid ).style.top = sprites[ sid ][ step ][ 'top' ] + "px";
-					}
-					if ( _opacity = sprites[ sid ][ step ].opacity !== 'undefined' ) {
-						document.getElementById( sid ).style.filter = "alpha(opacity=" + ( _opacity * 100 ) + ")";
-						document.getElementById( sid ).style.MozOpacity  = _opacity;
-						document.getElementById( sid ).style.opacity = _opacity;
-					}
-				}
-			}
-			
 			step = step + 1;
+			setTimeout( animation, 40 );
 		}
-		
-		setTimeout( animation, 40 );
 	}
 	
 	if ( options.start !== false ) {
