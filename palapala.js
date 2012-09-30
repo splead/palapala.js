@@ -1,5 +1,5 @@
 /*!
- * palapala.js v1.3.2
+ * palapala.js v1.4.0
  * http://www.palapala.jp/
  *
  * Copyright 2012, Splead Inc.
@@ -9,37 +9,64 @@
 
 function palapala ( sprites, options ) {
 	
-	options = options || {};
-	var step     = 0;
-	var lastStep = 0;
+	var _target   = null;
+	var _step     = 0;
+	var _lastStep = 0;
+	var _speed    = 0;
 	
-	for ( var sid in sprites ) {
+	
+	if ( typeof sprites === "string" ) {
 		
-		if ( sprites[ sid ] instanceof Array ) {
-			var tmp = {};
-			var _step = 0;
-			for ( var i in sprites[ sid ] ) {
-				tmp[ _step ] = sprites[ sid ][ i ];
-				_step = _step + sprites[ sid ][ i ].interval;
-			}
-			sprites[ sid ] = tmp;
-			if( lastStep < _step ){
-				lastStep = _step;
+		_target = [];
+		var node = document.getElementById( sprites );
+		for ( var i = 0; i < node.childNodes.length; i++ ) {
+			if ( node.childNodes[ i ].style ) {
+				_target.push( node.childNodes[ i ] );
 			}
 		}
 		
-		for ( var _step in sprites[ sid ] ) {
-			if ( lastStep < parseInt( _step ) ) {
-				lastStep = parseInt( _step );
-			}
-		}
-	}
-	
-	var animation = function() {
+		_speed = options * 40;
+		_lastStep = _target.length - 1;
+		
+		sequence();
+		
+	} else {
+		
+		options = options || {};
 		
 		for ( var sid in sprites ) {
 			
-			if ( sprites[ sid ][ step ] ) {
+			if ( sprites[ sid ] instanceof Array ) {
+				var tmp = {};
+				var step = 0;
+				for ( var i in sprites[ sid ] ) {
+					tmp[ step ] = sprites[ sid ][ i ];
+					step = step + sprites[ sid ][ i ].interval;
+				}
+				sprites[ sid ] = tmp;
+				if( _lastStep < step ){
+					_lastStep = step;
+				}
+			}
+			
+			for ( var step in sprites[ sid ] ) {
+				if ( _lastStep < parseInt( step ) ) {
+					_lastStep = parseInt( step );
+				}
+			}
+		}
+		
+		if ( options.start !== false ) {
+			animation();
+		}
+	}
+	
+	
+	function animation () {
+		
+		for ( var sid in sprites ) {
+			
+			if ( sprites[ sid ][ _step ] ) {
 				
 				var node = document.getElementById( sid );
 				for ( var i = 0; i < node.childNodes.length; i++ ) {
@@ -48,27 +75,30 @@ function palapala ( sprites, options ) {
 					}
 				}
 				
-				id = sprites[ sid ][ step ].id;
+				id = sprites[ sid ][ _step ].id;
 				document.getElementById( id ).style.display = "block";
 				
-				if ( typeof sprites[ sid ][ step ][ 'left' ] !== 'undefined' ) {
-					var _left = sprites[ sid ][ step ][ 'left' ];
-					document.getElementById( sid ).style.left = _left + "px";
+				if ( typeof sprites[ sid ][ _step ].left !== 'undefined' ) {
+					var left = sprites[ sid ][ _step ].left;
+					document.getElementById( sid ).style.left = left + "px";
 				}
-				if ( typeof sprites[ sid ][ step ][ 'top' ] !== 'undefined' ) {
-					var _top = sprites[ sid ][ step ][ 'top' ];
-					document.getElementById( sid ).style.top = _top + "px";
+				if ( typeof sprites[ sid ][ _step ].top !== 'undefined' ) {
+					var top = sprites[ sid ][ _step ].top;
+					document.getElementById( sid ).style.top = top + "px";
 				}
-				if ( typeof sprites[ sid ][ step ].opacity !== 'undefined' ) {
-					var _opacity = sprites[ sid ][ step ].opacity
-					document.getElementById( sid ).style.filter = "alpha(opacity=" + ( _opacity * 100 ) + ")";
-					document.getElementById( sid ).style.MozOpacity  = _opacity;
-					document.getElementById( sid ).style.opacity = _opacity;
+				if ( typeof sprites[ sid ][ _step ].opacity !== 'undefined' ) {
+					var opacity = sprites[ sid ][ _step ].opacity
+					document.getElementById( sid ).style.filter = "alpha(opacity=" + ( opacity * 100 ) + ")";
+					document.getElementById( sid ).style.MozOpacity  = opacity;
+					document.getElementById( sid ).style.opacity = opacity;
+				}
+				if ( typeof sprites[ sid ][ _step ].fn !== 'undefined' ) {
+					sprites[ sid ][ _step ].fn.call( document.getElementById( sid ) );
 				}
 			}
 		}
 		
-		if ( step >= lastStep ) {
+		if ( _step >= _lastStep ) {
 			
 			if ( options.repeat === false ) {
 				if ( options.callback ) {
@@ -76,24 +106,41 @@ function palapala ( sprites, options ) {
 				}
 				return;
 			} else {
-				step = 0;
+				_step = 0;
 				setTimeout( animation, 40 );
 			}
 			
 		} else {
 			
-			step = step + 1;
+			_step = _step + 1;
 			setTimeout( animation, 40 );
 		}
 	}
 	
-	if ( options.start !== false ) {
-		animation();
+	
+	function sequence () {
+		
+		for ( var i = 0; i < _target.length; i++ ) {
+			if ( _target[ i ].style ) {
+				_target[ i ].style.display = "none";
+			}
+		}
+		
+		_target[ _step ].style.display = "block";
+		
+		if ( _step >= _lastStep ) {
+			_step = 0;
+		} else {
+			_step = _step + 1;
+		}
+		
+		setTimeout( sequence, _speed );
 	}
+	
 	
 	return {
 		play: function() {
-			step = 0;
+			_step = 0;
 			animation();
 		}
 	}
