@@ -1,10 +1,13 @@
 /*!
- * palapala.js v1.4.0
+ * palapala.js v1.5.0
  * http://www.palapala.jp/
  *
- * Copyright 2012, Splead Inc.
+ * Copyright (c) 2012, Splead Inc.
  * http://www.splead.co.jp/
- * Dual licensed under the MIT or GPL Version 2 licenses.
+ * 
+ * Released under the MIT license.
+ * https://github.com/splead/palapala.js/blob/master/license.txt
+ * 
  */
 
 function palapala ( sprites, options ) {
