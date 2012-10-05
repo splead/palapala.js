@@ -1,5 +1,5 @@
 /*!
- * palapala.js v1.5.0
+ * palapala.js v1.6.0
  * http://www.palapala.jp/
  *
  * Copyright (c) 2012, Splead Inc.
@@ -10,7 +10,7 @@
  * 
  */
 
-function palapala ( sprites, options ) {
+function palapala ( sprits, options ) {
 	
 	var _target   = null;
 	var _step     = 0;
@@ -18,10 +18,10 @@ function palapala ( sprites, options ) {
 	var _speed    = 0;
 	
 	
-	if ( typeof sprites === "string" ) {
+	if ( typeof sprits === "string" ) {
 		
 		_target = [];
-		var node = document.getElementById( sprites );
+		var node = document.getElementById( sprits );
 		for ( var i = 0; i < node.childNodes.length; i++ ) {
 			if ( node.childNodes[ i ].style ) {
 				_target.push( node.childNodes[ i ] );
@@ -37,22 +37,22 @@ function palapala ( sprites, options ) {
 		
 		options = options || {};
 		
-		for ( var sid in sprites ) {
+		for ( var sid in sprits ) {
 			
-			if ( sprites[ sid ] instanceof Array ) {
+			if ( sprits[ sid ] instanceof Array ) {
 				var tmp = {};
 				var step = 0;
-				for ( var i in sprites[ sid ] ) {
-					tmp[ step ] = sprites[ sid ][ i ];
-					step = step + sprites[ sid ][ i ].interval;
+				for ( var i in sprits[ sid ] ) {
+					tmp[ step ] = sprits[ sid ][ i ];
+					step = step + sprits[ sid ][ i ].interval;
 				}
-				sprites[ sid ] = tmp;
+				sprits[ sid ] = tmp;
 				if( _lastStep < step ){
 					_lastStep = step;
 				}
 			}
 			
-			for ( var step in sprites[ sid ] ) {
+			for ( var step in sprits[ sid ] ) {
 				if ( _lastStep < parseInt( step ) ) {
 					_lastStep = parseInt( step );
 				}
@@ -67,9 +67,13 @@ function palapala ( sprites, options ) {
 	
 	function animation () {
 		
-		for ( var sid in sprites ) {
+		if ( typeof options.progress === 'function' ) {
+			options.progress.call( this, _step, _lastStep );
+		}
+		
+		for ( var sid in sprits ) {
 			
-			if ( sprites[ sid ][ _step ] ) {
+			if ( sprits[ sid ][ _step ] ) {
 				
 				var node = document.getElementById( sid );
 				for ( var i = 0; i < node.childNodes.length; i++ ) {
@@ -78,25 +82,25 @@ function palapala ( sprites, options ) {
 					}
 				}
 				
-				id = sprites[ sid ][ _step ].id;
+				id = sprits[ sid ][ _step ].id;
 				document.getElementById( id ).style.display = "block";
 				
-				if ( typeof sprites[ sid ][ _step ].left !== 'undefined' ) {
-					var left = sprites[ sid ][ _step ].left;
+				if ( typeof sprits[ sid ][ _step ].left !== 'undefined' ) {
+					var left = sprits[ sid ][ _step ].left;
 					document.getElementById( sid ).style.left = left + "px";
 				}
-				if ( typeof sprites[ sid ][ _step ].top !== 'undefined' ) {
-					var top = sprites[ sid ][ _step ].top;
+				if ( typeof sprits[ sid ][ _step ].top !== 'undefined' ) {
+					var top = sprits[ sid ][ _step ].top;
 					document.getElementById( sid ).style.top = top + "px";
 				}
-				if ( typeof sprites[ sid ][ _step ].opacity !== 'undefined' ) {
-					var opacity = sprites[ sid ][ _step ].opacity
+				if ( typeof sprits[ sid ][ _step ].opacity !== 'undefined' ) {
+					var opacity = sprits[ sid ][ _step ].opacity
 					document.getElementById( sid ).style.filter = "alpha(opacity=" + ( opacity * 100 ) + ")";
 					document.getElementById( sid ).style.MozOpacity  = opacity;
 					document.getElementById( sid ).style.opacity = opacity;
 				}
-				if ( typeof sprites[ sid ][ _step ].fn !== 'undefined' ) {
-					sprites[ sid ][ _step ].fn.call( document.getElementById( sid ) );
+				if ( typeof sprits[ sid ][ _step ].fn !== 'undefined' ) {
+					sprits[ sid ][ _step ].fn.call( document.getElementById( sid ) );
 				}
 			}
 		}
@@ -105,7 +109,7 @@ function palapala ( sprites, options ) {
 			
 			if ( options.repeat === false ) {
 				if ( options.callback ) {
-					options.callback.call( this, sprites );
+					options.callback.call( this, sprits );
 				}
 				return;
 			} else {
