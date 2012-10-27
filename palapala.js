@@ -1,5 +1,5 @@
 /*!
- * palapala.js v1.6.0
+ * palapala.js v1.7.0
  * http://www.palapala.jp/
  *
  * Copyright (c) 2012, Splead Inc.
@@ -15,10 +15,13 @@ function palapala ( sprits, options ) {
 	var _target   = null;
 	var _step     = 0;
 	var _lastStep = 0;
-	var _speed    = 0;
+	var _speed    = 40;
 	
+	if ( typeof options.frame ) {
+		_speed = 1000 / options.frame
+	}
 	
-	if ( typeof sprits === "string" ) {
+	if ( typeof sprits === 'string' ) {
 		
 		_target = [];
 		var node = document.getElementById( sprits );
@@ -40,16 +43,39 @@ function palapala ( sprits, options ) {
 		for ( var sid in sprits ) {
 			
 			if ( sprits[ sid ] instanceof Array ) {
+				
 				var tmp = {};
+				var pre = {};
 				var step = 0;
+				
 				for ( var i in sprits[ sid ] ) {
-					tmp[ step ] = sprits[ sid ][ i ];
-					step = step + sprits[ sid ][ i ].interval;
+					
+					if ( typeof sprits[ sid ][ i ].repeat !== 'undefined' ) {
+						for ( var n = 0; n < sprits[ sid ][ i ].repeat; n++ ) {
+							tmp[ step ] = pre;
+							if ( pre.interval ) {
+								step = step + pre.interval;
+							} else if ( pre.i ) {
+								step = step + pre.i;
+							}
+						}
+					} else {
+						tmp[ step ] = sprits[ sid ][ i ];
+						if ( sprits[ sid ][ i ].interval ) {
+							step = step + sprits[ sid ][ i ].interval;
+						} else if ( sprits[ sid ][ i ].i ) {
+							step = step + sprits[ sid ][ i ].i;
+						}
+						pre = sprits[ sid ][ i ];
+					}
 				}
-				sprits[ sid ] = tmp;
+				
 				if( _lastStep < step ){
 					_lastStep = step;
 				}
+				
+				tmp[ step ] = "end";
+				sprits[ sid ] = tmp;
 			}
 			
 			for ( var step in sprits[ sid ] ) {
@@ -75,30 +101,65 @@ function palapala ( sprits, options ) {
 			
 			if ( sprits[ sid ][ _step ] ) {
 				
-				var node = document.getElementById( sid );
-				for ( var i = 0; i < node.childNodes.length; i++ ) {
-					if ( node.childNodes[ i ].style ) {
-						node.childNodes[ i ].style.display = "none";
+				if ( typeof sprits[ sid ][ _step ].id !== 'undefined' ) {
+					
+					var node = document.getElementById( sid );
+					for ( var i = 0; i < node.childNodes.length; i++ ) {
+						if ( node.childNodes[ i ].style ) {
+							node.childNodes[ i ].style.display = "none";
+						}
 					}
+					id = sprits[ sid ][ _step ].id;
+					document.getElementById( id ).style.display = "block";
 				}
-				
-				id = sprits[ sid ][ _step ].id;
-				document.getElementById( id ).style.display = "block";
 				
 				if ( typeof sprits[ sid ][ _step ].left !== 'undefined' ) {
-					var left = sprits[ sid ][ _step ].left;
-					document.getElementById( sid ).style.left = left + "px";
+					document.getElementById( sid ).style.left = parseInt( sprits[ sid ][ _step ].left ) + "px";
 				}
+				
+				if ( typeof sprits[ sid ][ _step ].left_add !== 'undefined' ) {
+					document.getElementById( sid ).style.left =
+						( parseInt( document.getElementById( sid ).style.left.replace( /px/, "" ) )
+						+ parseInt( sprits[ sid ][ _step ].left_add ) ) + "px";
+				}
+				
 				if ( typeof sprits[ sid ][ _step ].top !== 'undefined' ) {
-					var top = sprits[ sid ][ _step ].top;
-					document.getElementById( sid ).style.top = top + "px";
+					document.getElementById( sid ).style.top = parseInt( sprits[ sid ][ _step ].top ) + "px";
 				}
+				
+				if ( typeof sprits[ sid ][ _step ].top_add !== 'undefined' ) {
+					document.getElementById( sid ).style.top =
+						( parseInt( document.getElementById( sid ).style.top.replace( /px/, "" ) )
+						+ parseInt( sprits[ sid ][ _step ].top_add ) ) + "px";
+				}
+				
+				if ( typeof sprits[ sid ][ _step ].width !== 'undefined' ) {
+					document.getElementById( sid ).style.width = parseInt( sprits[ sid ][ _step ].width ) + "px";
+				}
+				
+				if ( typeof sprits[ sid ][ _step ].width_add !== 'undefined' ) {
+					document.getElementById( sid ).style.width =
+						( parseInt( document.getElementById( sid ).style.width.replace( /px/, "" ) )
+						+ parseInt( sprits[ sid ][ _step ].width_add ) ) + "px";
+				}
+				
+				if ( typeof sprits[ sid ][ _step ].height !== 'undefined' ) {
+					document.getElementById( sid ).style.height = parseInt( sprits[ sid ][ _step ].height ) + "px";
+				}
+				
+				if ( typeof sprits[ sid ][ _step ].height_add !== 'undefined' ) {
+					document.getElementById( sid ).style.height =
+						( parseInt( document.getElementById( sid ).style.height.replace( /px/, "" ) )
+						+ parseInt( sprits[ sid ][ _step ].height_add ) ) + "px";
+				}
+				
 				if ( typeof sprits[ sid ][ _step ].opacity !== 'undefined' ) {
 					var opacity = sprits[ sid ][ _step ].opacity
 					document.getElementById( sid ).style.filter = "alpha(opacity=" + ( opacity * 100 ) + ")";
 					document.getElementById( sid ).style.MozOpacity  = opacity;
 					document.getElementById( sid ).style.opacity = opacity;
 				}
+				
 				if ( typeof sprits[ sid ][ _step ].fn !== 'undefined' ) {
 					sprits[ sid ][ _step ].fn.call( document.getElementById( sid ) );
 				}
@@ -107,20 +168,23 @@ function palapala ( sprits, options ) {
 		
 		if ( _step >= _lastStep ) {
 			
+			if ( options.complete ) {
+				options.complete.call( this, sprits );
+			} else if (options.callback) {
+				options.callback.call( this, sprits );
+			}
+			
 			if ( options.repeat === false ) {
-				if ( options.callback ) {
-					options.callback.call( this, sprits );
-				}
 				return;
 			} else {
 				_step = 0;
-				setTimeout( animation, 40 );
+				setTimeout( animation, _speed );
 			}
 			
 		} else {
 			
 			_step = _step + 1;
-			setTimeout( animation, 40 );
+			setTimeout( animation, _speed );
 		}
 	}
 	
