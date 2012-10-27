@@ -1,5 +1,5 @@
 /*!
- * palapala.js v1.7.0
+ * palapala.js v1.7.1
  * http://www.palapala.jp/
  *
  * Copyright (c) 2012, Splead Inc.
@@ -151,9 +151,11 @@ function palapala ( sprits, options ) {
 			
 			if ( sprits[ sid ][ _step ] ) {
 				
+				var domID = getDomId( sid )
+				
 				if ( typeof sprits[ sid ][ _step ].id !== 'undefined' ) {
 					
-					var node = document.getElementById( sid );
+					var node = document.getElementById( domID );
 					for ( var i = 0; i < node.childNodes.length; i++ ) {
 						if ( node.childNodes[ i ].style ) {
 							node.childNodes[ i ].style.display = "none";
@@ -164,54 +166,54 @@ function palapala ( sprits, options ) {
 				}
 				
 				if ( typeof sprits[ sid ][ _step ].left !== 'undefined' ) {
-					document.getElementById( sid ).style.left = parseInt( sprits[ sid ][ _step ].left ) + "px";
+					document.getElementById( domID ).style.left = parseInt( sprits[ sid ][ _step ].left ) + "px";
 				}
 				
 				if ( typeof sprits[ sid ][ _step ].left_add !== 'undefined' ) {
-					document.getElementById( sid ).style.left =
-						( parseInt( document.getElementById( sid ).style.left.replace( /px/, "" ) )
+					document.getElementById( domID ).style.left =
+						( parseInt( document.getElementById( domID ).style.left.replace( /px/, "" ) )
 						+ parseInt( sprits[ sid ][ _step ].left_add ) ) + "px";
 				}
 				
 				if ( typeof sprits[ sid ][ _step ].top !== 'undefined' ) {
-					document.getElementById( sid ).style.top = parseInt( sprits[ sid ][ _step ].top ) + "px";
+					document.getElementById( domID ).style.top = parseInt( sprits[ sid ][ _step ].top ) + "px";
 				}
 				
 				if ( typeof sprits[ sid ][ _step ].top_add !== 'undefined' ) {
-					document.getElementById( sid ).style.top =
-						( parseInt( document.getElementById( sid ).style.top.replace( /px/, "" ) )
+					document.getElementById( domID ).style.top =
+						( parseInt( document.getElementById( domID ).style.top.replace( /px/, "" ) )
 						+ parseInt( sprits[ sid ][ _step ].top_add ) ) + "px";
 				}
 				
 				if ( typeof sprits[ sid ][ _step ].width !== 'undefined' ) {
-					document.getElementById( sid ).style.width = parseInt( sprits[ sid ][ _step ].width ) + "px";
+					document.getElementById( domID ).style.width = parseInt( sprits[ sid ][ _step ].width ) + "px";
 				}
 				
 				if ( typeof sprits[ sid ][ _step ].width_add !== 'undefined' ) {
-					document.getElementById( sid ).style.width =
-						( parseInt( document.getElementById( sid ).style.width.replace( /px/, "" ) )
+					document.getElementById( domID ).style.width =
+						( parseInt( document.getElementById( domID ).style.width.replace( /px/, "" ) )
 						+ parseInt( sprits[ sid ][ _step ].width_add ) ) + "px";
 				}
 				
 				if ( typeof sprits[ sid ][ _step ].height !== 'undefined' ) {
-					document.getElementById( sid ).style.height = parseInt( sprits[ sid ][ _step ].height ) + "px";
+					document.getElementById( domID ).style.height = parseInt( sprits[ sid ][ _step ].height ) + "px";
 				}
 				
 				if ( typeof sprits[ sid ][ _step ].height_add !== 'undefined' ) {
-					document.getElementById( sid ).style.height =
-						( parseInt( document.getElementById( sid ).style.height.replace( /px/, "" ) )
+					document.getElementById( domID ).style.height =
+						( parseInt( document.getElementById( domID ).style.height.replace( /px/, "" ) )
 						+ parseInt( sprits[ sid ][ _step ].height_add ) ) + "px";
 				}
 				
 				if ( typeof sprits[ sid ][ _step ].opacity !== 'undefined' ) {
 					var opacity = sprits[ sid ][ _step ].opacity
-					document.getElementById( sid ).style.filter = "alpha(opacity=" + ( opacity * 100 ) + ")";
-					document.getElementById( sid ).style.MozOpacity  = opacity;
-					document.getElementById( sid ).style.opacity = opacity;
+					document.getElementById( domID ).style.filter = "alpha(opacity=" + ( opacity * 100 ) + ")";
+					document.getElementById( domID ).style.MozOpacity  = opacity;
+					document.getElementById( domID ).style.opacity = opacity;
 				}
 				
 				if ( typeof sprits[ sid ][ _step ].fn !== 'undefined' ) {
-					sprits[ sid ][ _step ].fn.call( document.getElementById( sid ) );
+					sprits[ sid ][ _step ].fn.call( document.getElementById( domID ) );
 				}
 			}
 		}
@@ -258,6 +260,9 @@ function palapala ( sprits, options ) {
 		setTimeout( sequence, _speed );
 	}
 	
+	function getDomId ( sid ) {
+		return sid.split(":").pop();
+	}
 	
 	return {
 		play: function() {
