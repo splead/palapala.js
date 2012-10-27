@@ -17,10 +17,6 @@ function palapala ( sprits, options ) {
 	var _lastStep = 0;
 	var _speed    = 40;
 	
-	if ( typeof options.frame ) {
-		_speed = 1000 / options.frame
-	}
-	
 	if ( typeof sprits === 'string' ) {
 		
 		_target = [];
@@ -39,6 +35,60 @@ function palapala ( sprits, options ) {
 	} else {
 		
 		options = options || {};
+		
+		if ( options.frame ) {
+			_speed = 1000 / options.frame
+		} else if ( options.msec ) {
+			_speed = options.msec
+		}
+		
+		for ( var sid in sprits ) {
+			if( sprits[ sid ] instanceof Array ){
+				var step = 0;
+				for ( var i in sprits[ sid ] ) {
+					if( sprits[ sid ][ i ].interval ){
+						step = step + sprits[ sid ][ i ].interval
+					} else if ( sprits[ sid ][ i ].i ) {
+						step = step + sprits[ sid ][ i ].i
+					}
+
+					if( typeof sprits[ sid ][ i ].sprite !== 'undefined' ){
+						var c_sprits = sprits[ sid ][ i ].sprite;
+						for ( var csid in c_sprits ) {
+							if ( c_sprits[ csid ] instanceof Array ) {
+								c_sprits[ csid ].unshift( { i: ( step - 1 ) } );
+								sprits[ sid + "-" + step + ":" + csid ] = c_sprits[ csid ];
+							} else {
+								var tmp = {};
+								for ( var cstep in c_sprits[ csid ] ) {
+									tmp[ parseInt(cstep) + parseInt(step) - 1 ] = c_sprits[ csid ][ cstep ];
+								}
+								sprits[ sid + "-" + step + ":" + csid ] = tmp;
+							}
+						}
+					}
+				}
+			} else {
+				for ( var step in sprits[ sid ] ) {
+					
+					if( typeof sprits[ sid ][ step ].sprite !== 'undefined' ) {
+						var c_sprits = sprits[ sid ][ step ].sprite;
+						for ( var csid in c_sprits ) {
+							if( c_sprits[ csid ] instanceof Array ) {
+								c_sprits[ csid ].unshift( { i: parseInt( step ) } );
+								sprits[ sid + "-" + step + ":" + csid ] = c_sprits[ csid ];
+							} else {
+								var tmp = {};
+								for ( var cstep in c_sprits[ csid ] ) {
+									tmp[ parseInt( cstep ) + parseInt( step ) ] = c_sprits[ csid ][ cstep ];
+								}
+								sprits[ sid + "-" + step + ":" + csid ] = tmp;
+							}
+						}
+					}
+				}
+			}
+		}
 		
 		for ( var sid in sprits ) {
 			
