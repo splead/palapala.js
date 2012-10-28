@@ -1,5 +1,5 @@
 /*!
- * palapala.js v1.7.1
+ * palapala.js v1.7.2
  * http://www.palapala.jp/
  *
  * Copyright (c) 2012, Splead Inc.
@@ -52,8 +52,8 @@ function palapala ( sprits, options ) {
 						step = step + sprits[ sid ][ i ].i
 					}
 
-					if( typeof sprits[ sid ][ i ].sprite !== 'undefined' ){
-						var c_sprits = sprits[ sid ][ i ].sprite;
+					if( typeof sprits[ sid ][ i ].sprits !== 'undefined' ){
+						var c_sprits = sprits[ sid ][ i ].sprits;
 						for ( var csid in c_sprits ) {
 							if ( c_sprits[ csid ] instanceof Array ) {
 								c_sprits[ csid ].unshift( { i: ( step - 1 ) } );
@@ -71,8 +71,8 @@ function palapala ( sprits, options ) {
 			} else {
 				for ( var step in sprits[ sid ] ) {
 					
-					if( typeof sprits[ sid ][ step ].sprite !== 'undefined' ) {
-						var c_sprits = sprits[ sid ][ step ].sprite;
+					if( typeof sprits[ sid ][ step ].sprits !== 'undefined' ) {
+						var c_sprits = sprits[ sid ][ step ].sprits;
 						for ( var csid in c_sprits ) {
 							if( c_sprits[ csid ] instanceof Array ) {
 								c_sprits[ csid ].unshift( { i: parseInt( step ) } );
