@@ -1,8 +1,9 @@
 /*!
- * palapala.js v1.7.2
+ * palapala.js v2.0.1
+ * https://github.com/splead/palapala.js
  * http://www.palapala.jp/
  *
- * Copyright (c) 2012, Splead Inc.
+ * Copyright (c) 2012, Kei Osumi
  * http://www.splead.co.jp/
  * 
  * Released under the MIT license.
@@ -10,264 +11,196 @@
  * 
  */
 
-function palapala ( sprits, options ) {
+function palapala ( actions, options ) {
 	
-	var _target   = null;
-	var _step     = 0;
-	var _lastStep = 0;
-	var _speed    = 40;
+	var timer_msec = 50;
+	var time_line  = {};
+	var play_list  = [];
 	
-	if ( typeof sprits === 'string' ) {
-		
-		_target = [];
-		var node = document.getElementById( sprits );
-		for ( var i = 0; i < node.childNodes.length; i++ ) {
-			if ( node.childNodes[ i ].style ) {
-				_target.push( node.childNodes[ i ] );
-			}
+	// set action onto time line
+	actions = actions || {};
+	time_line = setTimeline( actions );
+	
+	
+	// set options
+	options = options || {};
+	
+	if ( options.fps ) {
+		timer_msec = 1000 / options.fps
+	}
+	
+	if ( options.play ) {
+		var play = options.play;
+		if ( play instanceof Array ) {
+			play = play.join( ',' );
 		}
-		
-		_speed = options * 40;
-		_lastStep = _target.length - 1;
-		
-		sequence();
-		
-	} else {
-		
-		options = options || {};
-		
-		if ( options.frame ) {
-			_speed = 1000 / options.frame
-		} else if ( options.msec ) {
-			_speed = options.msec
-		}
-		
-		for ( var sid in sprits ) {
-			if( sprits[ sid ] instanceof Array ){
-				var step = 0;
-				for ( var i in sprits[ sid ] ) {
-					if( sprits[ sid ][ i ].interval ){
-						step = step + sprits[ sid ][ i ].interval
-					} else if ( sprits[ sid ][ i ].i ) {
-						step = step + sprits[ sid ][ i ].i
-					}
-
-					if( typeof sprits[ sid ][ i ].sprits !== 'undefined' ){
-						var c_sprits = sprits[ sid ][ i ].sprits;
-						for ( var csid in c_sprits ) {
-							if ( c_sprits[ csid ] instanceof Array ) {
-								c_sprits[ csid ].unshift( { i: ( step - 1 ) } );
-								sprits[ sid + "-" + step + ":" + csid ] = c_sprits[ csid ];
-							} else {
-								var tmp = {};
-								for ( var cstep in c_sprits[ csid ] ) {
-									tmp[ parseInt(cstep) + parseInt(step) - 1 ] = c_sprits[ csid ][ cstep ];
-								}
-								sprits[ sid + "-" + step + ":" + csid ] = tmp;
-							}
-						}
-					}
-				}
+		play = ',' + play + ','
+		for ( var id in time_line ) {
+			if ( play.indexOf( ',' + id + ',' ) == -1 ) {
+				// stop action
+				time_line[ id ].step = -1;
 			} else {
-				for ( var step in sprits[ sid ] ) {
-					
-					if( typeof sprits[ sid ][ step ].sprits !== 'undefined' ) {
-						var c_sprits = sprits[ sid ][ step ].sprits;
-						for ( var csid in c_sprits ) {
-							if( c_sprits[ csid ] instanceof Array ) {
-								c_sprits[ csid ].unshift( { i: parseInt( step ) } );
-								sprits[ sid + "-" + step + ":" + csid ] = c_sprits[ csid ];
-							} else {
-								var tmp = {};
-								for ( var cstep in c_sprits[ csid ] ) {
-									tmp[ parseInt( cstep ) + parseInt( step ) ] = c_sprits[ csid ][ cstep ];
-								}
-								sprits[ sid + "-" + step + ":" + csid ] = tmp;
-							}
-						}
-					}
-				}
+				// set action start point
+				time_line[ id ].step = 0;
 			}
-		}
-		
-		for ( var sid in sprits ) {
-			
-			if ( sprits[ sid ] instanceof Array ) {
-				
-				var tmp = {};
-				var pre = {};
-				var step = 0;
-				
-				for ( var i in sprits[ sid ] ) {
-					
-					if ( typeof sprits[ sid ][ i ].repeat !== 'undefined' ) {
-						for ( var n = 0; n < sprits[ sid ][ i ].repeat; n++ ) {
-							tmp[ step ] = pre;
-							if ( pre.interval ) {
-								step = step + pre.interval;
-							} else if ( pre.i ) {
-								step = step + pre.i;
-							}
-						}
-					} else {
-						tmp[ step ] = sprits[ sid ][ i ];
-						if ( sprits[ sid ][ i ].interval ) {
-							step = step + sprits[ sid ][ i ].interval;
-						} else if ( sprits[ sid ][ i ].i ) {
-							step = step + sprits[ sid ][ i ].i;
-						}
-						pre = sprits[ sid ][ i ];
-					}
-				}
-				
-				if( _lastStep < step ){
-					_lastStep = step;
-				}
-				
-				tmp[ step ] = "end";
-				sprits[ sid ] = tmp;
-			}
-			
-			for ( var step in sprits[ sid ] ) {
-				if ( _lastStep < parseInt( step ) ) {
-					_lastStep = parseInt( step );
-				}
-			}
-		}
-		
-		if ( options.start !== false ) {
-			animation();
 		}
 	}
+	
+	
+	// start animation
+	animation();
 	
 	
 	function animation () {
 		
-		if ( typeof options.progress === 'function' ) {
-			options.progress.call( this, _step, _lastStep );
-		}
-		
-		for ( var sid in sprits ) {
+		for ( var id in time_line ) {
 			
-			if ( sprits[ sid ][ _step ] ) {
+			// set play
+			for ( var i in play_list ) {
+				var pid = play_list.pop();
+				time_line[ pid ].step = 0;
+			}
+			
+			// get each action
+			var action = time_line[ id ];
+			
+			// current step of action
+			var step = action.step;
+			
+			// do action if step > -1
+			if ( step > -1 ) {
 				
-				var domID = getDomId( sid )
-				
-				if ( typeof sprits[ sid ][ _step ].id !== 'undefined' ) {
+				// action match to step
+				if ( action[ step ] ) {
 					
-					var node = document.getElementById( domID );
-					for ( var i = 0; i < node.childNodes.length; i++ ) {
-						if ( node.childNodes[ i ].style ) {
-							node.childNodes[ i ].style.display = "none";
+					// show
+					if ( typeof action[ step ].show !== 'undefined' ) {
+						
+						for ( var id in action[ step ][ 'show' ] ) {
+							
+							var target = action[ step ][ 'show' ][ id ];
+							if ( target instanceof Array ) {
+								target = target.join( ',' );
+							}
+							target = ',' + target + ','
+							var node = document.getElementById( id );
+							for ( var i=0; i<node.childNodes.length; i++ ) {
+								if ( node.childNodes[ i ].style ) {
+									if ( target.indexOf( ',' + node.childNodes[ i ].id + ',' ) == -1 ) {
+										node.childNodes[ i ].style.display = "none";
+									} else {
+										node.childNodes[ i ].style.display = "block";
+									}
+								}
+							}
 						}
 					}
-					id = sprits[ sid ][ _step ].id;
-					document.getElementById( id ).style.display = "block";
+					
+					// style
+					if ( typeof action[ step ].style !== 'undefined' ) {
+						for ( var id in action[ step ][ 'style' ] ) {
+							if ( action[ step ][ 'style' ][ id ] == "" ) {
+								className = document.getElementById( id ).className;
+								document.getElementById( id ).className = className.split( '  ' )[0];
+							} else {
+								className = document.getElementById( id ).className;
+								document.getElementById( id ).className = className + '  ' + action[ step ][ 'style' ][ id ];
+							}
+						}
+					}
+					
+					// action
+					if ( typeof action[ step ].action !== 'undefined' ) {
+						if ( action[ step ].action instanceof Array ) {
+							play_list = play_list.concat( action[ step ].action );
+						} else {
+							play_list.push( action[ step ].action );
+						}
+					}
+					
+					// repeat
+					if ( typeof action[ step ].repeat !== 'undefined' ) {
+						if ( action[ step ].repeat != 0 ) {
+							// set action start point
+							action.step = -1;
+							action[ step ].repeat = action[ step ].repeat - 1;
+						} else {
+							// stop action
+							action.step = -2;
+						}
+					}
 				}
 				
-				if ( typeof sprits[ sid ][ _step ].left !== 'undefined' ) {
-					document.getElementById( domID ).style.left = parseInt( sprits[ sid ][ _step ].left ) + "px";
-				}
-				
-				if ( typeof sprits[ sid ][ _step ].left_add !== 'undefined' ) {
-					document.getElementById( domID ).style.left =
-						( parseInt( document.getElementById( domID ).style.left.replace( /px/, "" ) )
-						+ parseInt( sprits[ sid ][ _step ].left_add ) ) + "px";
-				}
-				
-				if ( typeof sprits[ sid ][ _step ].top !== 'undefined' ) {
-					document.getElementById( domID ).style.top = parseInt( sprits[ sid ][ _step ].top ) + "px";
-				}
-				
-				if ( typeof sprits[ sid ][ _step ].top_add !== 'undefined' ) {
-					document.getElementById( domID ).style.top =
-						( parseInt( document.getElementById( domID ).style.top.replace( /px/, "" ) )
-						+ parseInt( sprits[ sid ][ _step ].top_add ) ) + "px";
-				}
-				
-				if ( typeof sprits[ sid ][ _step ].width !== 'undefined' ) {
-					document.getElementById( domID ).style.width = parseInt( sprits[ sid ][ _step ].width ) + "px";
-				}
-				
-				if ( typeof sprits[ sid ][ _step ].width_add !== 'undefined' ) {
-					document.getElementById( domID ).style.width =
-						( parseInt( document.getElementById( domID ).style.width.replace( /px/, "" ) )
-						+ parseInt( sprits[ sid ][ _step ].width_add ) ) + "px";
-				}
-				
-				if ( typeof sprits[ sid ][ _step ].height !== 'undefined' ) {
-					document.getElementById( domID ).style.height = parseInt( sprits[ sid ][ _step ].height ) + "px";
-				}
-				
-				if ( typeof sprits[ sid ][ _step ].height_add !== 'undefined' ) {
-					document.getElementById( domID ).style.height =
-						( parseInt( document.getElementById( domID ).style.height.replace( /px/, "" ) )
-						+ parseInt( sprits[ sid ][ _step ].height_add ) ) + "px";
-				}
-				
-				if ( typeof sprits[ sid ][ _step ].opacity !== 'undefined' ) {
-					var opacity = sprits[ sid ][ _step ].opacity
-					document.getElementById( domID ).style.filter = "alpha(opacity=" + ( opacity * 100 ) + ")";
-					document.getElementById( domID ).style.MozOpacity  = opacity;
-					document.getElementById( domID ).style.opacity = opacity;
-				}
-				
-				if ( typeof sprits[ sid ][ _step ].fn !== 'undefined' ) {
-					sprits[ sid ][ _step ].fn.call( document.getElementById( domID ) );
-				}
+				// count up the step of action
+				action.step = action.step + 1;
 			}
 		}
 		
-		if ( _step >= _lastStep ) {
+		// go to next step
+		setTimeout( animation, timer_msec );
+	}
+	
+	
+	function setTimeline( actions ) {
+		
+		var time_line = {};
+		
+		for ( var id in actions ) {
 			
-			if ( options.complete ) {
-				options.complete.call( this, sprits );
-			} else if (options.callback) {
-				options.callback.call( this, sprits );
-			}
-			
-			if ( options.repeat === false ) {
-				return;
+			// set action as serial format
+			if ( actions[ id ] instanceof Array ) {
+				
+				var action = {};
+				var step = 0;
+				
+				for ( var i in actions[ id ] ) {
+					
+					if ( actions[ id ][ i ].interval ) {
+						step = step + actions[ id ][ i ].interval;
+					} else {
+						action[ step ] = actions[ id ][ i ];
+						step = step + 1;
+					}
+				}
+				time_line[ id ] = action;
 			} else {
-				_step = 0;
-				setTimeout( animation, _speed );
+				time_line[ id ] = actions[ id ];
 			}
 			
-		} else {
-			
-			_step = _step + 1;
-			setTimeout( animation, _speed );
-		}
-	}
-	
-	
-	function sequence () {
-		
-		for ( var i = 0; i < _target.length; i++ ) {
-			if ( _target[ i ].style ) {
-				_target[ i ].style.display = "none";
+			// check and add repeat
+			var last = 0;
+			for ( var no in time_line[ id ] ) {
+				if ( last < parseInt( no ) ) {
+					last = parseInt( no );
+				}
 			}
+			if( time_line[ id ][ last ] ){
+				if ( typeof time_line[ id ][ last ][ 'repeat' ] == 'undefined' ) {
+					time_line[ id ][ last + 1 ] = { repeat: 0 };
+					time_line[ id ][ 'repeat' ] = 0;
+				} else {
+					time_line[ id ][ 'repeat' ] = time_line[ id ][ last ][ 'repeat' ];
+				}
+			} else {
+				time_line[ id ][ 0 ] = { repeat: 0 };
+				time_line[ id ][ 'repeat' ] = 0;
+			}
+			
+			// add step counter and repeat counter
+			time_line[ id ][ 'step' ] = 0;
 		}
 		
-		_target[ _step ].style.display = "block";
-		
-		if ( _step >= _lastStep ) {
-			_step = 0;
-		} else {
-			_step = _step + 1;
-		}
-		
-		setTimeout( sequence, _speed );
+		return time_line;
 	}
 	
-	function getDomId ( sid ) {
-		return sid.split(":").pop();
-	}
 	
 	return {
-		play: function() {
-			_step = 0;
-			animation();
+		play: function( ids ) {
+			if ( ids instanceof Array ) {
+				play_list = play_list.concat( ids );
+			} else {
+				play_list.push( ids );
+			}
 		}
 	}
 };
