@@ -4,7 +4,7 @@
 #How to use
 
 ## html
-    <div id=hello">
+    <div id="hello">
         <img id="hello1" src="hello1.png">
         <img id="hello2" src="hello2.png">
         <img id="hello3" src="hello3.png">
@@ -56,7 +56,7 @@
 * style: { id: class_name }
 
 
-## 
+## sub routine
     var actions = {
         action1: [
             { show: { hello: "hello1" } },
