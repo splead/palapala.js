@@ -46,7 +46,6 @@ function palapala ( actions, options ) {
 		}
 	}
 	
-	
 	// start animation
 	animation();
 	
@@ -56,7 +55,7 @@ function palapala ( actions, options ) {
 		for ( var id in time_line ) {
 			
 			// set play
-			for ( var i in play_list ) {
+			for ( var i=0; i<play_list.length; i++ ) {
 				var pid = play_list.pop();
 				if (time_line[ pid ] ) {
 					time_line[ pid ].step = 0;
