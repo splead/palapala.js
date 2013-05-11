@@ -1,5 +1,5 @@
 /*!
- * palapala.js v2.0.2
+ * palapala.js v2.0.3
  * https://github.com/splead/palapala.js
  * http://www.palapala.jp/
  *
