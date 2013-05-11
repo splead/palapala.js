@@ -1,5 +1,5 @@
 /*!
- * palapala.js v2.0.1
+ * palapala.js v2.0.2
  * https://github.com/splead/palapala.js
  * http://www.palapala.jp/
  *
@@ -29,7 +29,7 @@ function palapala ( actions, options ) {
 		timer_msec = 1000 / options.fps
 	}
 	
-	if ( options.play ) {
+	if ( options.play !== 'undefined' ) {
 		var play = options.play;
 		if ( play instanceof Array ) {
 			play = play.join( ',' );
@@ -58,7 +58,12 @@ function palapala ( actions, options ) {
 			// set play
 			for ( var i in play_list ) {
 				var pid = play_list.pop();
-				time_line[ pid ].step = 0;
+				if (time_line[ pid ] ) {
+					time_line[ pid ].step = 0;
+				} else {
+					alert( "action '" + pid + "' is not defined" );
+					throw "action '" + pid + "' is not defined";
+				}
 			}
 			
 			// get each action
