@@ -1,5 +1,5 @@
 /*!
- * palapala.js v2.0.3
+ * palapala.js v2.0.4
  * https://github.com/splead/palapala.js
  * http://www.palapala.jp/
  *
@@ -120,6 +120,11 @@ function palapala ( actions, options ) {
 						} else {
 							play_list.push( action[ step ].action );
 						}
+					}
+					
+					// function
+					if ( typeof action[ step ].fn !== 'undefined' ) {
+						action[ step ].fn.call( document.getElementById( id ) );
 					}
 					
 					// repeat
