@@ -1,5 +1,5 @@
 /*!
- * palapala.js v2.0.4
+ * palapala.js v2.1.0
  * https://github.com/splead/palapala.js
  * http://www.palapala.jp/
  *
@@ -26,7 +26,7 @@ function palapala ( actions, options ) {
 	options = options || {};
 	
 	if ( options.fps ) {
-		timer_msec = 1000 / options.fps
+		timer_msec = 1000 / options.fps;
 	}
 	
 	if ( options.play !== 'undefined' ) {
@@ -34,7 +34,7 @@ function palapala ( actions, options ) {
 		if ( play instanceof Array ) {
 			play = play.join( ',' );
 		}
-		play = ',' + play + ','
+		play = ',' + play + ',';
 		for ( var id in time_line ) {
 			if ( play.indexOf( ',' + id + ',' ) == -1 ) {
 				// stop action
@@ -86,7 +86,7 @@ function palapala ( actions, options ) {
 							if ( target instanceof Array ) {
 								target = target.join( ',' );
 							}
-							target = ',' + target + ','
+							target = ',' + target + ',';
 							var node = document.getElementById( id );
 							for ( var i=0; i<node.childNodes.length; i++ ) {
 								if ( node.childNodes[ i ].style ) {
@@ -125,6 +125,19 @@ function palapala ( actions, options ) {
 					// function
 					if ( typeof action[ step ].fn !== 'undefined' ) {
 						action[ step ].fn.call( document.getElementById( id ) );
+					}
+					
+					// audio
+					if ( typeof action[ step ].audio !== 'undefined' ) {
+						var audios = action[ step ][ 'audio' ];
+						for ( i=0; i<audios.length; i++ ) {
+							var audio = document.querySelector( "#" + audios[ i ] );
+							try {
+								audio.volume = 0.8;
+								audio.load();
+								audio.play();
+							} catch ( e ) {}
+						}
 					}
 					
 					// repeat
@@ -211,5 +224,5 @@ function palapala ( actions, options ) {
 				play_list.push( ids );
 			}
 		}
-	}
+	};
 };
